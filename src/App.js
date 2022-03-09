@@ -6,9 +6,9 @@ const KJVPCE = require('./KJVPCE.json');
 
 function App() {
   const [ guesses, setGuesses ] = useState([]);
-  const [ book, setBook ] = useState(0);
-  const [ chapter, setChapter ] = useState(0);
-  const [ verse, setVerse ] = useState(0);
+  const [ book, setBook ] = useState(-1);
+  const [ chapter, setChapter ] = useState(-1);
+  const [ verse, setVerse ] = useState(-1);
   const books = Object.keys( KJVPCE.books );
   const allVerses = books.map( book => KJVPCE.books[ book ].map( ( chapter, chapterNumber ) => chapter.map( ( verse, verseNumber ) => { return { verse, reference: [ book, chapterNumber, verseNumber ] }; } ) ).flat() ).flat();
   const daysSinceEpoch = Math.floor( new Date().getTime() / 1000 / 60 / 60 / 24 );
@@ -88,7 +88,7 @@ function App() {
               return <option key={index} value={ index }>{ index + 1 }</option>
             } ) }
           </select>
-          <input type="submit" value="Guess" disabled={ ! verse } />
+          <input type="submit" value="Guess" disabled={ verse < 0 } />
         </form>
         <div className="guesses">
           { guesses && guesses.map( ( guess, index ) => {
