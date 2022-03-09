@@ -39,12 +39,17 @@
 
 .guesses {
   text-align: left;
-  min-width: 400px;
 }
 
 .guess {
   display: flex;
+  gap: 2px;
   justify-content: space-between;
+}
+
+.guess span {
+  background: #333;
+  padding: .5em 1em;
 }
 
 .guesser {

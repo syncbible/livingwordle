@@ -40,10 +40,31 @@ function App() {
     setGuesses( [ ...guesses, guessNumber ] );
   }
 
+  const correctStyle = { background: "#393" };
+  const halfCorrectStyle = { background: "#c93" };
+
+  function getStyle( guessRef, index ) {
+    if ( todaysVerse.reference[ index ] === guessRef[ index ] ) {
+      return correctStyle;
+    }
+
+    if ( todaysVerse.reference[ 0 ] === guessRef[ index ] ) {
+      return halfCorrectStyle;
+    }
+
+    if ( todaysVerse.reference[ 1 ] === guessRef[ index ] ) {
+      return halfCorrectStyle;
+    }
+
+    if ( todaysVerse.reference[ 2 ] === guessRef[ index ] ) {
+      return halfCorrectStyle;
+    }
+  }
+
   return (
     <div className="App">
       <header className="App-header">
-        <h1>Guess the verse</h1>
+        <h1>The Living Wordle</h1>
         <p>{ todaysVerse.verse.map( words => words[ 0 ]).join(' ') }</p>
         <div className="guesser" onTouchMove={ onMove } onMouseMove={ onMove }>
           <div ref={ guessRef }></div>
@@ -72,9 +93,14 @@ function App() {
         <div className="guesses">
           { guesses && guesses.map( ( guess, index ) => {
             const difference = guess - verseNumber;
+            const guessRef = allVerses[ guess ].reference;
+
             return (
               <div key={ index } className="guess">
-                <span>{index + 1 }. { allVerses[ guess ].reference[0] + ' ' + ( allVerses[ guess ].reference[1] + 1 ) + ':' + ( allVerses[ guess ].reference[2] + 1 ) }</span> <span>{ difference === 0 ? '!' : difference > 0 ? '← ' + Math.abs( difference ) : Math.abs( difference ) + ' →'  }</span>
+                <span style={ getStyle( guessRef, 0 ) }>{ guessRef[0] }</span>
+                <span style={ getStyle( guessRef, 1 ) }>{ guessRef[1] + 1 }</span>
+                <span style={ getStyle( guessRef, 2 ) }>{ guessRef[2] + 1 }</span>
+                <span>{ difference === 0 ? '!' : difference > 0 ? '← ' + Math.abs( difference ) : Math.abs( difference ) + ' →'  }</span>
               </div>
             );
           } ) }
