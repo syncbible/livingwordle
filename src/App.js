@@ -11,7 +11,8 @@ function App() {
   const [ verse, setVerse ] = useState(-1);
   const books = Object.keys( KJVPCE.books );
   const allVerses = books.map( book => KJVPCE.books[ book ].map( ( chapter, chapterNumber ) => chapter.map( ( verse, verseNumber ) => { return { verse, reference: [ book, chapterNumber, verseNumber ] }; } ) ).flat() ).flat();
-  const daysSinceEpoch = Math.floor( new Date().getTime() / 1000 / 60 / 60 / 24 );
+  const todaysDate = new Date();
+  const daysSinceEpoch = Math.floor( todaysDate.getTime() / 1000 / 60 / 60 / 24 );
   const todaysNumber = daysSinceEpoch % allVerses.length;
   const verseNumber = verseToDayMapping[ todaysNumber ];
   const todaysVerse = allVerses[ verseNumber ];
@@ -68,6 +69,56 @@ function App() {
     return correctGuesses && correctGuesses.length > 0;
   }
 
+  const getSharingText = () => {
+    if ( guesses && guesses[ daysSinceEpoch ] ) {
+      const sharingText = guesses[ daysSinceEpoch ].map( ( guess ) => {
+        const guessRef = allVerses[ guess ].reference;
+
+        return guessRef.map( ( guessRefItem, index ) => {
+          if ( guessRefItem === todaysVerse.reference[ index ] ) {
+              return '🟩';
+          }
+
+          if ( guessRefItem === todaysVerse.reference[ 1 ] ) {
+            if ( index === 1 ) {
+              return '🟩';
+            }
+            if ( index === 2 ) {
+              return '🟧';
+            }
+          }
+
+          if ( guessRefItem === todaysVerse.reference[ 2 ] ) {
+            if ( index === 2 ) {
+              return '🟩';
+            }
+            if ( index === 1 ) {
+              return '🟧';
+            }
+          }
+
+          return '⬛'
+        } ).join('');
+      } ).join('\r\n');
+
+      return 'The Living Wordle ' + todaysDate.getFullYear() + '-' + ( todaysDate.getMonth() + 1 ) + '-' + todaysDate.getDate() + '\r\n' + sharingText;
+    }
+  };
+
+  const copySharingText = ( event ) => {
+    event.preventDefault();
+    const textarea = document.createElement( 'textarea' )
+    textarea.value = getSharingText();
+    document.body.appendChild( textarea );
+    textarea.select();
+    document.execCommand('copy');
+    textarea.remove();
+    event.target.focus();
+
+    /* Alert the copied text */
+    alert("Copied to clipboard:\r\n" + getSharingText() );
+  }
+
   return (
     <div className="App">
       <header className="App-header">
@@ -77,12 +128,18 @@ function App() {
           const difference = guess - verseNumber;
           const guessRef = allVerses[ guess ].reference;
 
+          const shareButton = () => {
+            return (
+              <a href="#" onClick={ ( event ) => copySharingText( event ) }>✓ Share</a>
+            );
+          };
+
           return (
             <div key={ index } className="guess wrapper">
               <span className="book" title={ guessRef[0] } style={ getStyle( guessRef, 0 ) }>{ guessRef[0] }</span>
               <span className="chapter" style={ getStyle( guessRef, 1 ) }>{ guessRef[1] + 1 }</span>
               <span className="verse" style={ getStyle( guessRef, 2 ) }>{ guessRef[2] + 1 }</span>
-              <span className="button" style={ difference === 0 ? correctStyle : {} } title={ Math.abs( difference ) + ' verses away' }>{ difference === 0 ? '✓' : difference > 0 ? '← ' + Math.abs( difference ) : Math.abs( difference ) + ' →'  }</span>
+              <span className="button" style={ difference === 0 ? correctStyle : {} } title={ Math.abs( difference ) + ' verses away' }>{ difference === 0 ? shareButton() : difference > 0 ? '← ' + Math.abs( difference ) : Math.abs( difference ) + ' →'  }</span>
             </div>
           );
         } ) }
