@@ -30,6 +30,15 @@ body {
   color: #61dafb;
 }
 
+a {
+  color: #333;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);
@@ -103,9 +112,22 @@ select, input {
 
 .button a {
   color: #fff;
-  text-decoration: none;
 }
 
 .hidden {
   display: none;
+}
+
+.stats {
+  margin: 0;
+  padding: 0;
+}
+
+.stat {
+  background: #ccc;
+  text-align: right;
+  margin-bottom: 2px;
+  min-width: 3ch;
+  padding: 0 1ch 0 0;
+  box-sizing: border-box;
 }

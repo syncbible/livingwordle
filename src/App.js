@@ -9,6 +9,7 @@ function App() {
   const [ book, setBook ] = useState(-1);
   const [ chapter, setChapter ] = useState(-1);
   const [ verse, setVerse ] = useState(-1);
+  const [ statsShowing, setStatsShowing ] = useState(false);
   const books = Object.keys( KJVPCE.books );
   const allVerses = books.map( book => KJVPCE.books[ book ].map( ( chapter, chapterNumber ) => chapter.map( ( verse, verseNumber ) => { return { verse, reference: [ book, chapterNumber, verseNumber ] }; } ) ).flat() ).flat();
   const todaysDate = new Date();
@@ -119,59 +120,93 @@ function App() {
     alert("Copied to clipboard:\r\n" + getSharingText() );
   }
 
+  const getStats = () => {
+    const stats = Object.keys( guesses ).map( guess => {
+      return guesses[guess].length;
+    } );
+    const largestNumber = Math.max(...stats);
+    const statCountArray = [];
+
+    for( var i = 1; i < largestNumber + 1 ; i++ ) {
+      statCountArray.push( i );
+    }
+
+    const list = statCountArray.map( count => {
+      const numberOfStat = stats.filter( stat => stat === count ).length;
+      const width = ( numberOfStat / stats.length ) * 100;
+      return ( <li className="stat" style={{ width: width + '%' }}>{ numberOfStat }</li> );
+    } );
+
+    return (
+      <>
+        <h2>Stats</h2>
+        <ol className="stats">{ list }</ol>
+        <a href="#" onClick={ () => setStatsShowing( false ) }>Hide</a>
+      </>
+    );
+  }
+
+  const content = (
+    <>
+    <p>{ todaysVerse.verse.map( words => words[ 0 ]).join(' ') }</p>
+    { guesses && guesses[ daysSinceEpoch ] && guesses[ daysSinceEpoch ].map( ( guess, index ) => {
+      const difference = guess - verseNumber;
+      const guessRef = allVerses[ guess ].reference;
+
+      const shareButton = () => {
+        return (
+          <a href="#" onClick={ ( event ) => copySharingText( event ) }>✓ Share</a>
+        );
+      };
+
+      return (
+        <div key={ index } className="guess wrapper">
+          <span className="book" title={ guessRef[0] } style={ getStyle( guessRef, 0 ) }>{ guessRef[0] }</span>
+          <span className="chapter" style={ getStyle( guessRef, 1 ) }>{ guessRef[1] + 1 }</span>
+          <span className="verse" style={ getStyle( guessRef, 2 ) }>{ guessRef[2] + 1 }</span>
+          <span className="button" style={ difference === 0 ? correctStyle : {} } title={ Math.abs( difference ) + ' verses away' }>{ difference === 0 ? shareButton() : difference > 0 ? '← ' + Math.abs( difference ) : Math.abs( difference ) + ' →'  }</span>
+        </div>
+      );
+    } ) }
+    { ! isAnyGuessCorrect() && <form className="wrapper" onSubmit={ submitForm }>
+      <span className="book">
+      <select name="book" onChange={( event )=>{ setBook( event.target.value)} }>
+        <option>Book</option>
+        { books.map( ( book, index ) => {
+          return <option key={index}>{ book }</option>
+        } ) }
+      </select>
+      </span>
+      <span className="chapter">
+      <select name="chapter" onChange={( event )=>{ setChapter( parseInt( event.target.value ) ) } }>
+        <option>Chapter</option>
+        { KJVPCE.books[ book ] && KJVPCE.books[ book ].map( ( chapters, index ) => {
+          return <option key={index} value={ index }>{ index + 1 }</option>
+        } ) }
+      </select>
+      </span>
+      <span className="verse">
+      <select name="verse" onChange={( event )=>{ setVerse( parseInt( event.target.value) ) } }>
+        <option>Verse</option>
+        { KJVPCE.books[ book ] && KJVPCE.books[ book ][ chapter ] && KJVPCE.books[ book ][ chapter ].map( ( verses, index ) => {
+          return <option key={index} value={ index }>{ index + 1 }</option>
+        } ) }
+      </select>
+      </span>
+      <span className="button">
+        <input type="submit" value="Guess" disabled={ verse < 0 } />
+      </span>
+    </form> }
+    { isAnyGuessCorrect() && <p><a href="#" onClick={ () => setStatsShowing(true) }>Stats</a></p> }
+    </>
+  )
+
   return (
     <div className="App">
       <header className="App-header">
         <h1>The Living Wordle</h1>
-        <p>{ todaysVerse.verse.map( words => words[ 0 ]).join(' ') }</p>
-        { guesses && guesses[ daysSinceEpoch ] && guesses[ daysSinceEpoch ].map( ( guess, index ) => {
-          const difference = guess - verseNumber;
-          const guessRef = allVerses[ guess ].reference;
-
-          const shareButton = () => {
-            return (
-              <a href="#" onClick={ ( event ) => copySharingText( event ) }>✓ Share</a>
-            );
-          };
-
-          return (
-            <div key={ index } className="guess wrapper">
-              <span className="book" title={ guessRef[0] } style={ getStyle( guessRef, 0 ) }>{ guessRef[0] }</span>
-              <span className="chapter" style={ getStyle( guessRef, 1 ) }>{ guessRef[1] + 1 }</span>
-              <span className="verse" style={ getStyle( guessRef, 2 ) }>{ guessRef[2] + 1 }</span>
-              <span className="button" style={ difference === 0 ? correctStyle : {} } title={ Math.abs( difference ) + ' verses away' }>{ difference === 0 ? shareButton() : difference > 0 ? '← ' + Math.abs( difference ) : Math.abs( difference ) + ' →'  }</span>
-            </div>
-          );
-        } ) }
-        { ! isAnyGuessCorrect() && <form className="wrapper" onSubmit={ submitForm }>
-          <span className="book">
-          <select name="book" onChange={( event )=>{ setBook( event.target.value)} }>
-            <option>Book</option>
-            { books.map( ( book, index ) => {
-              return <option key={index}>{ book }</option>
-            } ) }
-          </select>
-          </span>
-          <span className="chapter">
-          <select name="chapter" onChange={( event )=>{ setChapter( parseInt( event.target.value ) ) } }>
-            <option>Chapter</option>
-            { KJVPCE.books[ book ] && KJVPCE.books[ book ].map( ( chapters, index ) => {
-              return <option key={index} value={ index }>{ index + 1 }</option>
-            } ) }
-          </select>
-          </span>
-          <span className="verse">
-          <select name="verse" onChange={( event )=>{ setVerse( parseInt( event.target.value) ) } }>
-            <option>Verse</option>
-            { KJVPCE.books[ book ] && KJVPCE.books[ book ][ chapter ] && KJVPCE.books[ book ][ chapter ].map( ( verses, index ) => {
-              return <option key={index} value={ index }>{ index + 1 }</option>
-            } ) }
-          </select>
-          </span>
-          <span className="button">
-            <input type="submit" value="Guess" disabled={ verse < 0 } />
-          </span>
-        </form> }
+        { ! statsShowing && content }
+        { statsShowing && getStats() }
       </header>
     </div>
   );
