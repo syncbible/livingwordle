@@ -134,14 +134,14 @@ function App() {
     const list = statCountArray.map( count => {
       const numberOfStat = stats.filter( stat => stat === count ).length;
       const width = ( numberOfStat / stats.length ) * 100;
-      return ( <li className="stat" style={{ width: width + '%' }}>{ numberOfStat }</li> );
+      return ( <li key={ count } className="stat" style={{ width: width + '%' }}>{ numberOfStat }</li> );
     } );
 
     return (
       <>
         <h2>Stats</h2>
         <ol className="stats">{ list }</ol>
-        <a href="#" onClick={ () => setStatsShowing( false ) }>Hide</a>
+        <p><a href="#" onClick={ () => setStatsShowing( false ) }>Hide</a></p>
       </>
     );
   }
