@@ -10,6 +10,7 @@ function App() {
   const [ chapter, setChapter ] = useState(-1);
   const [ verse, setVerse ] = useState(-1);
   const [ statsShowing, setStatsShowing ] = useState(false);
+  const [ readMode, setReadMode ] = useState(false);
   const books = Object.keys( KJVPCE.books );
   const allVerses = books.map( book => KJVPCE.books[ book ].map( ( chapter, chapterNumber ) => chapter.map( ( verse, verseNumber ) => { return { verse, reference: [ book, chapterNumber, verseNumber ] }; } ) ).flat() ).flat();
   const todaysDate = new Date();
@@ -17,6 +18,7 @@ function App() {
   const todaysNumber = daysSinceEpoch % allVerses.length;
   const verseNumber = verseToDayMapping[ todaysNumber ];
   const todaysVerse = allVerses[ verseNumber ];
+  const todaysReferecence = todaysVerse.reference;
 
   useEffect(() => {
     const guesses = JSON.parse( localStorage.getItem('guesses') );
@@ -45,19 +47,19 @@ function App() {
   const halfCorrectStyle = { background: "#c93" };
 
   function getStyle( guessRef, index ) {
-    if ( todaysVerse.reference[ index ] === guessRef[ index ] ) {
+    if ( todaysReferecence[ index ] === guessRef[ index ] ) {
       return correctStyle;
     }
 
-    if ( todaysVerse.reference[ 0 ] === guessRef[ index ] ) {
+    if ( todaysReferecence[ 0 ] === guessRef[ index ] ) {
       return halfCorrectStyle;
     }
 
-    if ( todaysVerse.reference[ 1 ] === guessRef[ index ] ) {
+    if ( todaysReferecence[ 1 ] === guessRef[ index ] ) {
       return halfCorrectStyle;
     }
 
-    if ( todaysVerse.reference[ 2 ] === guessRef[ index ] ) {
+    if ( todaysReferecence[ 2 ] === guessRef[ index ] ) {
       return halfCorrectStyle;
     }
   }
@@ -139,38 +141,55 @@ function App() {
 
     return (
       <>
-        <h2>Stats</h2>
+        <h1>The Living Wordle: Stats</h1>
         <ol className="stats">{ list }</ol>
         <p><a href="#" onClick={ () => setStatsShowing( false ) }>Hide</a></p>
       </>
     );
   }
 
+  const shareButton = () => {
+    return (
+      <a href="#" onClick={ ( event ) => copySharingText( event ) }>Share</a>
+    );
+  };
+
+  const urlOfVerse = 'https://sync.bible/#/KJV/' + todaysVerse.reference[0] + '/' + ( todaysVerse.reference[1] + 1 ) + '/' + ( todaysVerse.reference[2] + 1 );
+
+  const getVerse = ( verse, index, selected ) => (
+    <p className={ selected ? 'selected' : '' }>
+      { index ? index + '. ' : '' } { verse.map( ( words, key ) => (
+        <span key={ key } className={ words[ 1 ] }>{ words[ 0 ] + ' ' }</span>
+      ) ) }
+    </p>
+  );
+
+  const wholeChapter = (
+      <div className="whole-chapter">
+        <h1>{ todaysReferecence[0] } { todaysReferecence[1] + 1 }</h1>
+        { KJVPCE.books[ todaysReferecence[0] ][ todaysReferecence[1] ].map( ( verse, index ) => getVerse( verse, index + 1, index === todaysReferecence[2] ) ) }
+        <p><a href="#" onClick={ () => setReadMode( false ) }>Hide</a> • <a href={ urlOfVerse }>Read more</a></p>
+      </div>
+  );
+
+  const readButton = (
+    <a href="#" onClick={ ()=>setReadMode( true ) }>Read</a>
+  );
+
   const content = (
     <>
-    <p>{ todaysVerse.verse.map( ( words, key ) => {
-      return (
-        <span key={ key } className={ words[ 1 ] }>
-          { words[ 0 ] + ' ' }
-        </span>
-      );
-    } ) }</p>
+    <h1>The Living Wordle</h1>
+    { getVerse( todaysVerse.verse, null, false ) }
     { guesses && guesses[ daysSinceEpoch ] && guesses[ daysSinceEpoch ].map( ( guess, index ) => {
       const difference = guess - verseNumber;
       const guessRef = allVerses[ guess ].reference;
-
-      const shareButton = () => {
-        return (
-          <a href="#" onClick={ ( event ) => copySharingText( event ) }>✓ Share</a>
-        );
-      };
 
       return (
         <div key={ index } className="guess wrapper">
           <span className="book" title={ guessRef[0] } style={ getStyle( guessRef, 0 ) }>{ guessRef[0] }</span>
           <span className="chapter" style={ getStyle( guessRef, 1 ) }>{ guessRef[1] + 1 }</span>
           <span className="verse" style={ getStyle( guessRef, 2 ) }>{ guessRef[2] + 1 }</span>
-          <span className="button" style={ difference === 0 ? correctStyle : {} } title={ Math.abs( difference ) + ' verses away' }>{ difference === 0 ? shareButton() : difference > 0 ? '← ' + Math.abs( difference ) : Math.abs( difference ) + ' →'  }</span>
+          <span className="button" style={ difference === 0 ? correctStyle : {} } title={ Math.abs( difference ) + ' verses away' }>{ difference === 0 ? '✓' : difference > 0 ? '← ' + Math.abs( difference ) : Math.abs( difference ) + ' →'  }</span>
         </div>
       );
     } ) }
@@ -203,16 +222,26 @@ function App() {
         <input type="submit" value="Guess" disabled={ verse < 0 } />
       </span>
     </form> }
-    { isAnyGuessCorrect() && <p><a href="#" onClick={ () => setStatsShowing(true) }>Stats</a></p> }
+    { isAnyGuessCorrect() && <p>{ readButton } • { shareButton() } • <a href="#" onClick={ () => setStatsShowing(true) }>Stats</a></p> }
     </>
   )
+
+  const getContent = () => {
+    if ( statsShowing ) {
+      return getStats();
+    }
+
+    if ( readMode ) {
+      return wholeChapter
+    }
+
+    return content;
+  }
 
   return (
     <div className="App">
       <header className="App-header">
-        <h1>The Living Wordle</h1>
-        { ! statsShowing && content }
-        { statsShowing && getStats() }
+        { getContent() }
       </header>
     </div>
   );

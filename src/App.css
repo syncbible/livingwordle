@@ -135,3 +135,19 @@ select, input {
 .dvnNm  {
   text-transform: uppercase;
 }
+
+.whole-chapter {
+  text-align: left;
+}
+
+.selected {
+  background-color: #393;
+  color: #fff;
+  margin: -.5em;
+  padding: .5em;
+}
+
+.added {
+  color: #999;
+  font-style: italic;
+}
