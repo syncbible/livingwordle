@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/livingwordle/static/css/main.b0e16345.css",
+    "main.js": "/livingwordle/static/js/main.90addc05.js",
+    "static/js/787.78f5ed00.chunk.js": "/livingwordle/static/js/787.78f5ed00.chunk.js",
+    "index.html": "/livingwordle/index.html",
+    "main.b0e16345.css.map": "/livingwordle/static/css/main.b0e16345.css.map",
+    "main.90addc05.js.map": "/livingwordle/static/js/main.90addc05.js.map",
+    "787.78f5ed00.chunk.js.map": "/livingwordle/static/js/787.78f5ed00.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.b0e16345.css",
+    "static/js/main.90addc05.js"
+  ]
+}
