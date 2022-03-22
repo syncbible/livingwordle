@@ -148,7 +148,13 @@ function App() {
 
   const content = (
     <>
-    <p>{ todaysVerse.verse.map( words => words[ 0 ]).join(' ') }</p>
+    <p>{ todaysVerse.verse.map( ( words, key ) => {
+      return (
+        <span key={ key } className={ words[ 1 ] }>
+          { words[ 0 ] + ' ' }
+        </span>
+      );
+    } ) }</p>
     { guesses && guesses[ daysSinceEpoch ] && guesses[ daysSinceEpoch ].map( ( guess, index ) => {
       const difference = guess - verseNumber;
       const guessRef = allVerses[ guess ].reference;
